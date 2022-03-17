@@ -53,7 +53,7 @@ void chat(int sockfd)
         }
         fgets(msg2, BUFFER_SIZE, stdin);
         //On envoie le message au client
-        write(sockfd, msg2, strlen(msg2)+1);
+        write(sockfd, msg2, strlen(msg2)+1);//+1 pour le \0
 
 
     }
@@ -80,7 +80,7 @@ int main()
     //Paramétrage du socket
     if(setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
     {
-        perror("setsockopt");
+        perror("setsockopt (socket option)");
         exit(EXIT_FAILURE);
     }
     //Initialisation de l'adresse
@@ -96,13 +96,13 @@ int main()
     //Listening
     if(listen(server_fd, 3) < 0)
     {
-        perror("listen");
+        perror("listen failed");
         exit(EXIT_FAILURE);
     }
     //On attend une connexion
     if((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)
     {
-        perror("accept");
+        perror("accept failed");
         exit(EXIT_FAILURE);
     }
     //On lance la fonction chat
