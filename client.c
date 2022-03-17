@@ -50,7 +50,7 @@ void chat(int sockfd)
         }
         fgets(msg1, BUFFER_SIZE, stdin);
         //Send the message to the server
-        write(sockfd, msg1, strlen(msg1)+1);
+        write(sockfd, msg1, strlen(msg1)+1); //+1 pour le \0
 
     }
 }
