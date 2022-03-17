@@ -66,7 +66,7 @@ int main()
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
-    char buffer[1024] = {0};
+    char buffer[1024] = {0}; //Buffer pour les messages, le {0} est pour initialiser le buffer
     //Création du socket
     if((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
@@ -94,7 +94,7 @@ int main()
         exit(EXIT_FAILURE);
     }
     //Listening
-    if(listen(server_fd, 3) < 0)
+    if(listen(server_fd, 10) < 0)// 10 est le nombre de clients maximum, longueur maximale de la file d'attente
     {
         perror("listen failed");
         exit(EXIT_FAILURE);
