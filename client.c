@@ -13,6 +13,19 @@
 //On définit le port
 #define PORT 8080
 
+
+
+
+//print par défaut
+void reset () {
+  printf("\033[0m");
+}
+
+//print en vert
+void green () {
+    printf("\033[0;32m");
+}
+
 //Function to chat between client and server
 void chat(int sockfd)
 {
@@ -66,26 +79,33 @@ int main()
     //Create the socket
     if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
-        perror("socket failed");
+        perror("\033[0;31msocket failed");
+        reset();
         exit(EXIT_FAILURE);
     }
     else
     {
+        green();
         printf("Socket successfully created\n");
+        reset();
+        
     }
     //assign the address to the socket
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_addr.s_addr = INADDR_ANY;//modifier l'adresse IP
     address.sin_port = htons(PORT);
     //connect the socket to the server
     if (connect(client_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
     {
-        perror("connect failed. Error");
+        perror("\033[0;31mconnect failed. Error");
+        reset();
         exit(EXIT_FAILURE);
     }
     else
     {
+        green();
         printf("Connected to the server\n");
+        reset();
     }
 
     //Function for chat
