@@ -33,9 +33,19 @@ void chat(int sockfd)
     send(sockfd, "Welcome to the chat room!\n", 25, 0);//send() est une fonction qui envoie des données sur un socket
     while(1)
     {
-        
+        //Si le message est "Exit" le server va fermer la connexion
+        if(strncmp(msg2, "Exit", 4) == 0)
+        {
+            puts("Server is closing");
+            break;
+        }
         //Read the message sent by the server
         read_size = recv(sockfd, msg1, BUFFER_SIZE, 0);
+        if (strncmp(msg1, "Exit", 4) == 0)
+        {
+            puts("Client is closing");
+            break;
+        }
         //Si le recv renvoie 0 c'est que le client a fermé la connexion
         if(read_size == 0)
         {
@@ -55,12 +65,6 @@ void chat(int sockfd)
         fflush(stdout);
         //Enter the message to be sent
         printf("Enter the message: ");
-        //Si le message est "Exit" le server va fermer la connexion
-        if(strncmp(msg2, "Exit", 4) == 0)
-        {
-            puts("Server is closing");
-            break;
-        }
         fgets(msg2, BUFFER_SIZE, stdin);
         //On envoie le message au client
         write(sockfd, msg2, strlen(msg2)+1);//+1 pour le \0
@@ -151,3 +155,38 @@ int main()
     close(new_socket);
     return 0;
 }
+
+
+
+
+
+/**
+ *Serveur en mode non connecté (UDP)
+void udp_server()
+{
+    int sockfd, newsockfd, portO;//On définit les variables, sockfd est le socket, newsockfd est le socket qui va recevoir les données, portO est le port
+    char buffer[BUFFER_SIZE];//On définit le buffer, buffer qui va recevoir les données
+    struct sockaddr_in serv_addr;//On définit les adresses
+    //Création du socket
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);//On définit le type de socket SOCK_DGRAM pour UDP
+    if (sockfd < 0)
+    {
+        perror("ERROR opening socket");
+        exit(1);
+    }
+    portO = PORT;//On définit le port
+    //On définit l'adresse du serveur
+    serv_addr.sin_family = AF_INET;// AF_INET est le type d'adresse IPV4
+    serv_addr.sin_addr.s_addr = INADDR_ANY;//INADDR_ANY est l'adresse IPV4 de toutes les interfaces
+    serv_addr.sin_port = htons(portno);//htons() est une fonction qui convertit un entier en un entier de type réseau
+    //On bind le socket
+    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
+    {
+        perror("ERROR on binding");
+        exit(1);
+    }
+    //On ferme le socket
+    close(sockfd);
+}
+ * 
+ */
