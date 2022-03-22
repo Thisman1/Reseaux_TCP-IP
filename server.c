@@ -155,38 +155,3 @@ int main()
     close(new_socket);
     return 0;
 }
-
-
-
-
-
-/**
- *Serveur en mode non connecté (UDP)
-void udp_server()
-{
-    int sockfd, newsockfd, portO;//On définit les variables, sockfd est le socket, newsockfd est le socket qui va recevoir les données, portO est le port
-    char buffer[BUFFER_SIZE];//On définit le buffer, buffer qui va recevoir les données
-    struct sockaddr_in serv_addr;//On définit les adresses
-    //Création du socket
-    sockfd = socket(AF_INET, SOCK_DGRAM, 0);//On définit le type de socket SOCK_DGRAM pour UDP
-    if (sockfd < 0)
-    {
-        perror("ERROR opening socket");
-        exit(1);
-    }
-    portO = PORT;//On définit le port
-    //On définit l'adresse du serveur
-    serv_addr.sin_family = AF_INET;// AF_INET est le type d'adresse IPV4
-    serv_addr.sin_addr.s_addr = INADDR_ANY;//INADDR_ANY est l'adresse IPV4 de toutes les interfaces
-    serv_addr.sin_port = htons(portno);//htons() est une fonction qui convertit un entier en un entier de type réseau
-    //On bind le socket
-    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
-    {
-        perror("ERROR on binding");
-        exit(1);
-    }
-    //On ferme le socket
-    close(sockfd);
-}
- * 
- */
