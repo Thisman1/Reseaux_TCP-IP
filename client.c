@@ -34,8 +34,19 @@ void chat(int sockfd)
     int read_size;
     while(1)
     {
+        //Si le message est "Exit" le client va fermer la connexion
+        if(strncmp(msg1, "Exit", 4) == 0)
+        {
+            puts("Client is closing");
+            break;
+        }
         //Read the message sent by the server
         read_size = recv(sockfd, msg2, BUFFER_SIZE, 0);
+        if(strncmp(msg2, "Exit", 4) == 0)
+        {
+            puts("Server is closing");
+            break;
+        }
         //Si le recv renvoie 0 c'est que le server a fermé la connexion
         if(read_size == 0)
         {
@@ -55,12 +66,6 @@ void chat(int sockfd)
         fflush(stdout);
         //Enter the message to be sent
         printf("Enter the message: ");
-        //Si le message est "Exit" le client va fermer la connexion
-        if(strncmp(msg1, "Exit", 4) == 0)
-        {
-            puts("Client is closing");
-            break;
-        }
         fgets(msg1, BUFFER_SIZE, stdin);
         //Send the message to the server
         write(sockfd, msg1, strlen(msg1)+1); //+1 pour le \0
