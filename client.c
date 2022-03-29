@@ -1,6 +1,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
 #include <arpa/inet.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,11 +58,11 @@ void chat(int sockfd)
             break;
         }
         //Si le recv renvoie -1 c'est que quelque chose s'est mal passé
-        else if(read_size == -1)
+        /*else if(read_size == 0)
         {
             perror("Reception message failed");
             break;
-        }
+        }*/
         //On affiche le message reçu
         printf("Server: %s\n", msg2);
         fflush(stdout);
@@ -74,48 +76,75 @@ void chat(int sockfd)
 }
 
 //Main function for the client side
-int main()
+int main(int argc , char *argv[])
 {
-    int client_fd, new_socket, valread;
-    struct sockaddr_in address;
-    int opt = 1;
-    int addrlen = sizeof(address);
+    int client_fd;  
+    struct addrinfo address_ip;
+    struct addrinfo *result, *client;
+    int res;
 
-    //Create the socket
-    if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
-    {
-        perror("\033[0;31msocket failed");
-        reset();
-        exit(EXIT_FAILURE);
-    }
-    else
-    {
-        green();
-        printf("Socket successfully created\n");
-        reset();
-        
-    }
-    //assign the address to the socket
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;//modifier l'adresse IP
-    address.sin_port = htons(PORT);
-    //connect the socket to the server
-    if (connect(client_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
-    {
-        perror("\033[0;31mconnect failed. Error");
-        reset();
-        exit(EXIT_FAILURE);
-    }
-    else
-    {
-        green();
-        printf("Connected to the server\n");
-        reset();
-    }
+
+
+	if (argc < 2)
+		{
+			fprintf (stderr, "ERROR !!! not enough input\n");
+			exit (0);
+		}
+
+ /* Obtain address(es) matching host/port */
+
+           memset(&address_ip, 0, sizeof(address_ip));
+           address_ip.ai_family = AF_UNSPEC;    /* Unsecific allow IPv4 or IPv6 */
+           address_ip.ai_socktype = SOCK_STREAM; /* Type of socket, here we have a TCP socket */
+           address_ip.ai_flags = 0;
+           address_ip.ai_protocol = 0;          /* Any protocol */
+
+           res = getaddrinfo(argv[1], "8080", &address_ip, &result);
+           if (res != 0) 
+			   {
+				   fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(res));
+				   exit(EXIT_FAILURE);
+			   }
+			   
+	for (client = result; client; client = client->ai_next)
+	{
+		if ((client_fd = socket(AF_UNSPEC, SOCK_STREAM, 0)) == 0)
+		{
+			perror("\033[0;31msocket failed");
+			reset();
+			exit(EXIT_FAILURE);
+		}
+		else
+		{
+			green();
+			printf("Socket successfully created\n");
+			reset();
+
+					//connect the socket to the server
+					//connect(client_fd, (struct sockaddr *)&address, sizeof(address)
+					
+				if ( connect(client_fd, client->ai_addr, client->ai_addrlen) != -1)
+				{
+					perror("\033[0;31mconnect failed. Error");
+					reset();
+					exit(EXIT_FAILURE);
+				}
+				else
+				{
+					green();
+					printf("Connected to the server\n");
+					reset();
+				}
+		}
+	
+	}
+    
+
 
     //Function for chat
     chat(client_fd);
     //Close the socket
+    freeaddrinfo(result);
     close(client_fd);
     return 0;
 }
