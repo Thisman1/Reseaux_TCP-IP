@@ -57,11 +57,11 @@ void chat(int sockfd)
             break;
         }
         //Si le recv renvoie -1 c'est que quelque chose s'est mal passé
-        /*else if(read_size == 0)
+        else if(read_size == -1)
         {
             perror("Reception message failed");
             break;
-        }*/
+        }
         //On affiche le message reçu
         printf("Client: %s\n", msg1);
         fflush(stdout);
@@ -84,9 +84,9 @@ int main(int argc , char *argv[])
     int res;
     
     struct sockaddr_in address;
-    int opt = 1;
+    //int opt = 1;
     int addrlen = sizeof(address);
-    char buffer[1024] = {0}; //Buffer pour les messages, le {0} est pour initialiser le buffer
+	//char buffer[1024] = {0}; //Buffer pour les messages, le {0} est pour initialiser le buffer
     
 			if (argc < 2)
 		{
@@ -95,9 +95,9 @@ int main(int argc , char *argv[])
 		}
     
     //Création du socket
-    if((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+    if((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0 )
     {
-        perror("\033[0;31msocket failed");
+        perror("\033[0;31mSocket failed");
         reset();
         exit(EXIT_FAILURE);
     }
@@ -108,17 +108,17 @@ int main(int argc , char *argv[])
         reset();
     }
     //Paramétrage du socket
-    if(setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
+    /*if(setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
     {
 
         perror("\033[0;31msetsockopt (socket option)");
         reset();
         exit(EXIT_FAILURE);
-    }
+    }*/
     /* Obtain address(es) matching host/port */
 
            memset(&address_ip, 0, sizeof(address_ip));
-           address_ip.ai_family = AF_UNSPEC;    /* Unsecific allow IPv4 or IPv6 */
+           address_ip.ai_family = AF_INET;    /* Unsecific allow IPv4 or IPv6 *//*AF_UNSPEC*/
            address_ip.ai_socktype = SOCK_STREAM; /* Type of socket, here we have a TCP socket */
            address_ip.ai_flags = 0;
            address_ip.ai_protocol = 0;          /* Any protocol */
@@ -134,9 +134,9 @@ int main(int argc , char *argv[])
 	{
 		//Create the socket
 		//client->ai_protocol=0;
-		if ((server_fd = socket(AF_UNSPEC, SOCK_STREAM, 0)) == 0)
+		if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
 		{
-			perror("\033[0;31msocket failed");
+			perror("\033[0;31mSocket failed");
 			reset();
 			exit(EXIT_FAILURE);
 		}
@@ -146,10 +146,15 @@ int main(int argc , char *argv[])
 			printf("Socket successfully created\n");
 			reset();
 		}
-		
-		if ( bind (server_fd, server->ai_addr, server->ai_addrlen) ==0)
-			{
+		int tr=1;
 
+		// kill "Address already in use" error message
+		if (setsockopt(server_fd,SOL_SOCKET,SO_REUSEADDR,&tr,sizeof(int)) == -1) {
+			perror("setsockopt");
+			exit(1);
+		}
+		if ( bind (server_fd, server->ai_addr, server->ai_addrlen) < 0)
+		:;;;	{
         perror("\033[0;31mbind failed");
         reset();
         exit(EXIT_FAILURE);
@@ -163,7 +168,7 @@ int main(int argc , char *argv[])
 	}
     
     //Listening
-    if(listen(server_fd, 10) == 0)// 10 est le nombre de clients maximum, longueur maximale de la file d'attente
+    if(listen(server_fd, 10) < 0)// 10 est le nombre de clients maximum, longueur maximale de la file d'attente
     {
         perror("\033[0;31mlisten failed");
         reset();
@@ -176,7 +181,7 @@ int main(int argc , char *argv[])
         reset();
     }
     //On attend une connexion
-    if((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))==0)
+    if((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0)
     //socklen_t est un type de donnée pour la taille d'un socket, addrlen est un pointeur sur la taille de l'adresse du client
     {
         perror("\033[0;31maccept failed");
@@ -188,7 +193,7 @@ int main(int argc , char *argv[])
   
     
     //On lance la fonction chat
-    chat(new_socket);
+    //chat(new_socket);
     //On ferme le socket
     close(new_socket);
     return 0;

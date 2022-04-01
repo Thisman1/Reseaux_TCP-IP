@@ -58,11 +58,11 @@ void chat(int sockfd)
             break;
         }
         //Si le recv renvoie -1 c'est que quelque chose s'est mal passé
-        /*else if(read_size == 0)
+        else if(read_size == -1)
         {
             perror("Reception message failed");
             break;
-        }*/
+        }
         //On affiche le message reçu
         printf("Server: %s\n", msg2);
         fflush(stdout);
@@ -94,7 +94,7 @@ int main(int argc , char *argv[])
  /* Obtain address(es) matching host/port */
 
            memset(&address_ip, 0, sizeof(address_ip));
-           address_ip.ai_family = AF_UNSPEC;    /* Unsecific allow IPv4 or IPv6 */
+           address_ip.ai_family = AF_INET;    /* Unsecific allow IPv4 or IPv6 */
            address_ip.ai_socktype = SOCK_STREAM; /* Type of socket, here we have a TCP socket */
            address_ip.ai_flags = 0;
            address_ip.ai_protocol = 0;          /* Any protocol */
@@ -108,7 +108,7 @@ int main(int argc , char *argv[])
 			   
 	for (client = result; client; client = client->ai_next)
 	{
-		if ((client_fd = socket(AF_UNSPEC, SOCK_STREAM, 0)) == 0)
+		if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		{
 			perror("\033[0;31msocket failed");
 			reset();
@@ -123,9 +123,9 @@ int main(int argc , char *argv[])
 					//connect the socket to the server
 					//connect(client_fd, (struct sockaddr *)&address, sizeof(address)
 					
-				if ( connect(client_fd, client->ai_addr, client->ai_addrlen) != -1)
+				if ( connect(client_fd, client->ai_addr, client->ai_addrlen) < 0)
 				{
-					perror("\033[0;31mconnect failed. Error");
+					perror("\033[0;31mConnect failed. Error");
 					reset();
 					exit(EXIT_FAILURE);
 				}
