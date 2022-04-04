@@ -13,7 +13,7 @@
 //On définit la taille du buffer
 #define BUFFER_SIZE 1024
 //On définit le port
-#define PORT 8080
+const char *PORT = "8080";
 
 //print par défaut
 void reset () {
@@ -32,7 +32,7 @@ void chat(int sockfd)
     char msg2 [BUFFER_SIZE];
     int read_size;
     //Message de bienvenue
-    send(sockfd, "Welcome to the chat room!\n", 25, 0);//send() est une fonction qui envoie des données sur un socket
+	send(sockfd, "Welcome to the chat room!\n", 25, 0);
     while(1)
     {
         //Si le message est "Exit" le server va fermer la connexion
@@ -57,7 +57,7 @@ void chat(int sockfd)
             break;
         }
         //Si le recv renvoie -1 c'est que quelque chose s'est mal passé
-        else if(read_size == -1)
+         else if(read_size == -1)
         {
             perror("Reception message failed");
             break;
@@ -82,10 +82,9 @@ int main(int argc , char *argv[])
     struct addrinfo address_ip;
     struct addrinfo *result, *server;
     int res;
-    
-    struct sockaddr_in address;
+    struct sockaddr address;
+    socklen_t addrlen = sizeof(address);
     //int opt = 1;
-    int addrlen = sizeof(address);
 	//char buffer[1024] = {0}; //Buffer pour les messages, le {0} est pour initialiser le buffer
     
 			if (argc < 2)
@@ -120,25 +119,23 @@ int main(int argc , char *argv[])
            memset(&address_ip, 0, sizeof(address_ip));
            address_ip.ai_family = AF_INET;    /* Unsecific allow IPv4 or IPv6 *//*AF_UNSPEC*/
            address_ip.ai_socktype = SOCK_STREAM; /* Type of socket, here we have a TCP socket */
-           address_ip.ai_flags = 0;
-           address_ip.ai_protocol = 0;          /* Any protocol */
+           address_ip.ai_flags = AI_PASSIVE;
+           address_ip.ai_protocol = IPPROTO_TCP;          /* Any protocol */
 
-           res = getaddrinfo(argv[1], "8080", &address_ip, &result);
+           res = getaddrinfo(NULL, PORT, &address_ip, &result);
            if (res != 0) 
 			   {
 				   fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(res));
 				   exit(EXIT_FAILURE);
 			   }
 			   
-	for (server = result; server; server = server->ai_next)
+	for (server = result; server != NULL; server = server->ai_next)
 	{
 		//Create the socket
-		//client->ai_protocol=0;
-		if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+
+		if ((server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
 		{
-			perror("\033[0;31mSocket failed");
-			reset();
-			exit(EXIT_FAILURE);
+			continue;
 		}
 		else
 		{
@@ -149,15 +146,15 @@ int main(int argc , char *argv[])
 		int tr=1;
 
 		// kill "Address already in use" error message
-		if (setsockopt(server_fd,SOL_SOCKET,SO_REUSEADDR,&tr,sizeof(int)) == -1) {
+		if (setsockopt(server_fd,SOL_SOCKET,SO_REUSEADDR,&tr,sizeof(int)) == -1) 
+		{
 			perror("setsockopt");
 			exit(1);
 		}
-		if ( bind (server_fd, server->ai_addr, server->ai_addrlen) < 0)
-		:;;;	{
-        perror("\033[0;31mbind failed");
-        reset();
-        exit(EXIT_FAILURE);
+		if ( bind (server_fd, server->ai_addr, server->ai_addrlen) == 0)
+			{
+        break;
+        close(server_fd);
 			}
 		else
 			{
@@ -166,11 +163,15 @@ int main(int argc , char *argv[])
         reset();
 			}
 	}
+	if (server == NULL)
+			{
+        perror("\033[0;31m Failed to create ant the client socket.");
+        exit(EXIT_FAILURE);}
     
     //Listening
-    if(listen(server_fd, 10) < 0)// 10 est le nombre de clients maximum, longueur maximale de la file d'attente
+    if(listen(server_fd, 10) == -1)// 10 est le nombre de clients maximum, longueur maximale de la file d'attente
     {
-        perror("\033[0;31mlisten failed");
+        perror("\033[0;31mListen failed !!!");
         reset();
         exit(EXIT_FAILURE);
     }
@@ -180,21 +181,34 @@ int main(int argc , char *argv[])
         printf("Server is listening\n");
         reset();
     }
+
     //On attend une connexion
-    if((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0)
+  while (1)
+  {
+    if( (new_socket = accept (server_fd, &address, &addrlen)) < 0 )
     //socklen_t est un type de donnée pour la taille d'un socket, addrlen est un pointeur sur la taille de l'adresse du client
     {
-        perror("\033[0;31maccept failed");
+        perror("\033[0;31maccept failed !!!");
         reset();
         exit(EXIT_FAILURE);
 
     }
     
-  
-    
+		char buff[1024];
+		if (recv(new_socket, buff, sizeof(buff),0) == -1)
+		{
+			perror("\033[0;31maccept failed");
+        reset();
+        exit(EXIT_FAILURE);
+		}
+	
     //On lance la fonction chat
-    //chat(new_socket);
+    chat(new_socket);
     //On ferme le socket
+    freeaddrinfo(result);
     close(new_socket);
-    return 0;
+    
+}
+
+return 0;
 }

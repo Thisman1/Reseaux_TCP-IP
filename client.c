@@ -13,27 +13,16 @@
 //On définit la taille du buffer
 #define BUFFER_SIZE 1024
 //On définit le port
-#define PORT 8080
+const char *PORT = "8080";
 
 
 
-
-//print par défaut
-void reset () {
-  printf("\033[0m");
-}
-
-//print en vert
-void green () {
-    printf("\033[0;32m");
-}
-
-//Function to chat between client and server
 void chat(int sockfd)
 {
     char msg1 [BUFFER_SIZE];
     char msg2 [BUFFER_SIZE];
     int read_size;
+    send(sockfd, "Welcome to the chat room!\n", 100, 0);
     while(1)
     {
         //Si le message est "Exit" le client va fermer la connexion
@@ -58,7 +47,7 @@ void chat(int sockfd)
             break;
         }
         //Si le recv renvoie -1 c'est que quelque chose s'est mal passé
-        else if(read_size == -1)
+         else if(read_size == -1)
         {
             perror("Reception message failed");
             break;
@@ -74,6 +63,18 @@ void chat(int sockfd)
 
     }
 }
+//print par défaut
+void reset () {
+  printf("\033[0m");
+}
+
+//print en vert
+void green () {
+    printf("\033[0;32m");
+}
+
+//Function to chat between client and server
+
 
 //Main function for the client side
 int main(int argc , char *argv[])
@@ -94,57 +95,62 @@ int main(int argc , char *argv[])
  /* Obtain address(es) matching host/port */
 
            memset(&address_ip, 0, sizeof(address_ip));
-           address_ip.ai_family = AF_INET;    /* Unsecific allow IPv4 or IPv6 */
+           address_ip.ai_family = AF_INET;    /* Unsecific allow IPv4 or IPv6 only IPv4 here */
            address_ip.ai_socktype = SOCK_STREAM; /* Type of socket, here we have a TCP socket */
-           address_ip.ai_flags = 0;
-           address_ip.ai_protocol = 0;          /* Any protocol */
+           address_ip.ai_protocol = IPPROTO_TCP;  //0
+             /* Any protocol */
 
-           res = getaddrinfo(argv[1], "8080", &address_ip, &result);
+           res = getaddrinfo(argv[1], PORT, &address_ip, &result);
            if (res != 0) 
 			   {
 				   fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(res));
 				   exit(EXIT_FAILURE);
 			   }
 			   
-	for (client = result; client; client = client->ai_next)
+	for (client = result; client != NULL; client = client->ai_next)
 	{
-		if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		if ((client_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
 		{
-			perror("\033[0;31msocket failed");
-			reset();
-			exit(EXIT_FAILURE);
+			continue;
 		}
-		else
-		{
+		
 			green();
 			printf("Socket successfully created\n");
 			reset();
 
 					//connect the socket to the server
-					//connect(client_fd, (struct sockaddr *)&address, sizeof(address)
+	
 					
-				if ( connect(client_fd, client->ai_addr, client->ai_addrlen) < 0)
+				if ( connect(client_fd, client->ai_addr, client->ai_addrlen) != -1 )
 				{
-					perror("\033[0;31mConnect failed. Error");
-					reset();
+					
+					break;
+					close(client_fd);
+				}
+	}
+	if (client == NULL)
+				{
+					perror ("Failed to create and connected !!! \n");
 					exit(EXIT_FAILURE);
 				}
-				else
-				{
-					green();
-					printf("Connected to the server\n");
-					reset();
-				}
-		}
-	
+				
+		//printf ("Client socket created and connected \n");
+    /*char * message = " Connexion ";
+	if (send (client_fd,message,strlen(message),0) == -1 )
+	{
+		perror ("Failed !!!!! \n");
+		exit(EXIT_FAILURE);
+	}*/
+	else
+	{
+		printf ("Client socket created and connected \n");
 	}
-    
-
 
     //Function for chat
     chat(client_fd);
     //Close the socket
     freeaddrinfo(result);
-    close(client_fd);
-    return 0;
+    
+
+return 0;
 }
