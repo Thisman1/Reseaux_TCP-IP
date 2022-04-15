@@ -13,7 +13,15 @@
 //On définit la taille du buffer
 #define BUFFER_SIZE 1024
 //On définit le port
+
 const char *PORT = "8080";
+int server_fd, new_socket;  
+    struct addrinfo address_ip;
+    struct addrinfo *result, *server;
+    int res;
+    struct sockaddr_in address;
+    socklen_t addrlen = sizeof(address);
+    pid_t client_pid;
 
 //print par défaut
 void reset () {
@@ -46,6 +54,7 @@ void chat(int sockfd)
         if (strncmp(msg1, "Exit", 4) == 0)
         {
             puts("Client is closing");
+            printf("Disconnected from %s:%d\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
             break;
         }
         //Si le recv renvoie 0 c'est que le client a fermé la connexion
@@ -78,13 +87,13 @@ void chat(int sockfd)
 //Main function
 int main(int argc , char *argv[])
 {
-    int server_fd, new_socket;  
+    /*int server_fd, new_socket;  
     struct addrinfo address_ip;
     struct addrinfo *result, *server;
     int res;
-    struct sockaddr address;
+    struct sockaddr_in address;
     socklen_t addrlen = sizeof(address);
-    //int opt = 1;
+    pid_t client_pid;*/
 	//char buffer[1024] = {0}; //Buffer pour les messages, le {0} est pour initialiser le buffer
     
 			if (argc < 2)
@@ -117,10 +126,10 @@ int main(int argc , char *argv[])
     /* Obtain address(es) matching host/port */
 
            memset(&address_ip, 0, sizeof(address_ip));
-           address_ip.ai_family = AF_INET;    /* Unsecific allow IPv4 or IPv6 *//*AF_UNSPEC*/
-           address_ip.ai_socktype = SOCK_STREAM; /* Type of socket, here we have a TCP socket */
+           address_ip.ai_family = AF_INET;    		/* Unspecific allow IPv4 or IPv6 ==> AF_UNSPEC */
+           address_ip.ai_socktype = SOCK_STREAM; 	/* Type of socket, here we have a TCP socket */
            address_ip.ai_flags = AI_PASSIVE;
-           address_ip.ai_protocol = IPPROTO_TCP;          /* Any protocol */
+           address_ip.ai_protocol = 0;				//PPROTO_TCP;          /* Any protocol */
 
            res = getaddrinfo(NULL, PORT, &address_ip, &result);
            if (res != 0) 
@@ -185,7 +194,7 @@ int main(int argc , char *argv[])
     //On attend une connexion
   while (1)
   {
-    if( (new_socket = accept (server_fd, &address, &addrlen)) < 0 )
+    if( (new_socket = accept (server_fd, (struct sockaddr*) &address, &addrlen)) < 0 )
     //socklen_t est un type de donnée pour la taille d'un socket, addrlen est un pointeur sur la taille de l'adresse du client
     {
         perror("\033[0;31maccept failed !!!");
@@ -193,20 +202,26 @@ int main(int argc , char *argv[])
         exit(EXIT_FAILURE);
 
     }
+    printf("Connection accepted from %s:%d\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
     
-		char buff[1024];
-		if (recv(new_socket, buff, sizeof(buff),0) == -1)
-		{
-			perror("\033[0;31maccept failed");
-        reset();
-        exit(EXIT_FAILURE);
-		}
-	
-    //On lance la fonction chat
-    chat(new_socket);
-    //On ferme le socket
-    freeaddrinfo(result);
-    close(new_socket);
+		if ( (client_pid = fork() == 0) )
+	{
+		
+			char buff[1024];
+			if (recv(new_socket, buff, sizeof(buff),0) == -1)
+			{
+				perror("\033[0;31maccept failed");
+			reset();
+			exit(EXIT_FAILURE);
+			}
+		
+		//On lance la fonction chat
+		chat(new_socket);
+		//On ferme le socket
+		freeaddrinfo(result);
+		close(new_socket);
+		
+	}
     
 }
 
