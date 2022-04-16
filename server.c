@@ -160,15 +160,15 @@ int main(int argc , char *argv[])
 			perror("setsockopt");
 			exit(1);
 		}
-		if ( bind (server_fd, server->ai_addr, server->ai_addrlen) == 0)
+		if ( bind (server_fd, server->ai_addr, server->ai_addrlen) == -1)
 		{
              break; 
-            close(server_fd); 
+            close(server_fd); // Si le bind a échoué on ferme le socket et on passe à la prochaine adresse IP
 		}
 		else
 		{
             green();
-            printf("Socket successfully binded\n");
+            printf("Socket successfully binded\n");// Sinon on affiche que le socket a été bindé
             reset();
 		}
 	}
@@ -202,13 +202,13 @@ int main(int argc , char *argv[])
         exit(EXIT_FAILURE);
 
     }
-    printf("Connection accepted from %s:%d\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+    printf("Connection accepted from %s:%d\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port)); //inet_ntoa convertit l'adresse IP en chaine de caractère et ntohs convertit le port en entier
     
-		if ( (client_pid = fork() == 0) )
+		if ( (client_pid = fork() == 0) ) // utilisation du fork pour créer un processus fils afin de gérer les connexions
 	{
 		
-			char buff[1024];
-			if (recv(new_socket, buff, sizeof(buff),0) == -1)
+			char buff[1024]; //Buffer pour les messages
+			if (recv(new_socket, buff, sizeof(buff),0) == -1) 
 			{
 				perror("\033[0;31maccept failed");
 			reset();
