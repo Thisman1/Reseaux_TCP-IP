@@ -54,7 +54,7 @@ void chat(int sockfd)
         if (strncmp(msg1, "Exit", 4) == 0)
         {
             puts("Client is closing");
-            printf("Disconnected from %s:%d\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+            printf("Disconnected from %s to : %d\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
             break;
         }
         //Si le recv renvoie 0 c'est que le client a fermé la connexion
@@ -174,7 +174,7 @@ int main(int argc , char *argv[])
 	}
 	if (server == NULL)
 			{
-        perror("\033[0;31m Failed to create ant the client socket.");
+        perror("\033[0;31m Failed to create and to bind the client socket.");
         exit(EXIT_FAILURE);}
     
     //Listening
@@ -202,7 +202,7 @@ int main(int argc , char *argv[])
         exit(EXIT_FAILURE);
 
     }
-    printf("Connection accepted from %s:%d\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+    printf("Connection accepted from %s  to : %d\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
     
 		if ( (client_pid = fork() == 0) )
 	{
