@@ -125,34 +125,34 @@ int main(int argc , char *argv[])
     }*/
     /* Obtain address(es) matching host/port */
 
-           memset(&address_ip, 0, sizeof(address_ip));
+           memset(&address_ip, 0, sizeof(address_ip));//On utilise memset pour initialiser le struct addrinfo à 0
            address_ip.ai_family = AF_INET;    		/* Unspecific allow IPv4 or IPv6 ==> AF_UNSPEC */
            address_ip.ai_socktype = SOCK_STREAM; 	/* Type of socket, here we have a TCP socket */
-           address_ip.ai_flags = AI_PASSIVE;
+           address_ip.ai_flags = AI_PASSIVE;    	/* For wildcard IP address */
            address_ip.ai_protocol = 0;				//PPROTO_TCP;          /* Any protocol */
 
-           res = getaddrinfo(NULL, PORT, &address_ip, &result);
-           if (res != 0) 
+           res = getaddrinfo(NULL, PORT, &address_ip, &result); // getaddrinfo renvoie un pointeur vers un tableau de struct addrinfo qui contient les adresses IP et les ports associés
+           if (res != 0) // Si res != 0 c'est que getaddrinfo a renvoyé une erreur
 			   {
 				   fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(res));
 				   exit(EXIT_FAILURE);
 			   }
 			   
-	for (server = result; server != NULL; server = server->ai_next)
+	for (server = result; server != NULL; server = server->ai_next) //On parcourt le tableau de struct addrinfo
 	{
 		//Create the socket
 
 		if ((server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
 		{
-			continue;
+			continue; // Si la création du socket a échoué on passe à la prochaine adresse IP
 		}
 		else
 		{
 			green();
-			printf("Socket successfully created\n");
+			printf("Socket successfully created\n"); // Sinon on affiche que le socket a été créé
 			reset();
 		}
-		int tr=1;
+		int tr=1; //tr va nous permettre de vérifier si le socket est bien bindé
 
 		// kill "Address already in use" error message
 		if (setsockopt(server_fd,SOL_SOCKET,SO_REUSEADDR,&tr,sizeof(int)) == -1) 
@@ -160,17 +160,17 @@ int main(int argc , char *argv[])
 			perror("setsockopt");
 			exit(1);
 		}
-		if ( bind (server_fd, server->ai_addr, server->ai_addrlen) == 0)
-			{
-        break;
-        close(server_fd);
-			}
+		if ( bind (server_fd, server->ai_addr, server->ai_addrlen) == -1)
+		{
+             break; 
+            close(server_fd); // Si le bind a échoué on ferme le socket et on passe à la prochaine adresse IP
+		}
 		else
-			{
-        green();
-        printf("Socket successfully binded\n");
-        reset();
-			}
+		{
+            green();
+            printf("Socket successfully binded\n");// Sinon on affiche que le socket a été bindé
+            reset();
+		}
 	}
 	if (server == NULL)
 			{
@@ -202,13 +202,17 @@ int main(int argc , char *argv[])
         exit(EXIT_FAILURE);
 
     }
+<<<<<<< HEAD
     printf("Connection accepted from %s  to : %d\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+=======
+    printf("Connection accepted from %s:%d\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port)); //inet_ntoa convertit l'adresse IP en chaine de caractère et ntohs convertit le port en entier
+>>>>>>> b0c2fce6b31a494036189cb831ecbd8c78095661
     
-		if ( (client_pid = fork() == 0) )
+		if ( (client_pid = fork() == 0) ) // utilisation du fork pour créer un processus fils afin de gérer les connexions
 	{
 		
-			char buff[1024];
-			if (recv(new_socket, buff, sizeof(buff),0) == -1)
+			char buff[1024]; //Buffer pour les messages
+			if (recv(new_socket, buff, sizeof(buff),0) == -1) 
 			{
 				perror("\033[0;31maccept failed");
 			reset();

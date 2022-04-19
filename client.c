@@ -94,45 +94,45 @@ int main(int argc , char *argv[])
 
  /* Obtain address(es) matching host/port */
 
-           memset(&address_ip, 0, sizeof(address_ip));
+           memset(&address_ip, 0, sizeof(address_ip)); //On initialise la structure à 0 
            address_ip.ai_family = AF_INET;    /* Unsecific allow IPv4 or IPv6 only IPv4 here */
            address_ip.ai_socktype = SOCK_STREAM; /* Type of socket, here we have a TCP socket */
            address_ip.ai_protocol = IPPROTO_TCP;  //0
              /* Any protocol */
 
-           res = getaddrinfo(argv[1], PORT, &address_ip, &result);
-           if (res != 0) 
+           res = getaddrinfo(argv[1], PORT, &address_ip, &result); //On récupère les informations de l'adresse
+           if (res != 0)
 			   {
-				   fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(res));
+				   fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(res)); 
 				   exit(EXIT_FAILURE);
 			   }
 			   
-	for (client = result; client != NULL; client = client->ai_next)
+	for (client = result; client != NULL; client = client->ai_next) //Pour chaque adresse
 	{
-		if ((client_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
+		if ((client_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) //On crée le socket
 		{
-			continue;
+			continue; //On continue si le socket n'a pas pu être créé
 		}
 		
-			green();
-			printf("Socket successfully created\n");
-			reset();
+		green();
+		printf("Socket successfully created\n");
+		reset();
 
-					//connect the socket to the server
+		//connect the socket to the server
 	
 					
-				if ( connect(client_fd, client->ai_addr, client->ai_addrlen) != -1 )
-				{
+		if ( connect(client_fd, client->ai_addr, client->ai_addrlen) != -1 ) // Si la connexion échoue
+		{
 					
-					break;
-					close(client_fd);
-				}
+			break;
+			close(client_fd);
+		}
 	}
-	if (client == NULL)
-				{
-					perror ("Failed to create and connected !!! \n");
-					exit(EXIT_FAILURE);
-				}
+	if (client == NULL) 
+	{
+		perror ("Failed to create and connected !!! \n");
+		exit(EXIT_FAILURE);
+	}
 				
 		//printf ("Client socket created and connected \n");
     /*char * message = " Connexion ";
