@@ -95,7 +95,7 @@ int main(int argc , char *argv[])
     
     /* Obtain address(es) matching host/port */
 
-    memset(&address_ip, 0, sizeof(address_ip));
+    memset(&address_ip, 0, sizeof(address_ip)); //Ici on utilise memset pour initialiser la structure à 0
     address_ip.ai_family = AF_INET;    		/* Unspecific allow IPv4 or IPv6 ==> AF_UNSPEC */
     address_ip.ai_socktype = SOCK_STREAM; 	/* Type of socket, here we have a TCP socket */
     address_ip.ai_flags = AI_PASSIVE;
@@ -164,30 +164,41 @@ int main(int argc , char *argv[])
         reset();
     }
 
-//On attend une connexion
-  while (1)
-  {
-    if( (new_socket = accept (server_fd, (struct sockaddr*) &address, &addrlen)) < 0 )
-    //socklen_t est un type de donnée pour la taille d'un socket, addrlen est un pointeur sur la taille de l'adresse du client
+//On attend une connexion tant que le server n'est pas fermé, si le server est fermé on quitte le programme
+    while(1)
     {
-        perror("\033[0;31maccept failed !!!");
-        reset();
-        exit(EXIT_FAILURE);
-
+        //On accepte une connexion
+        new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
+        if (new_socket == -1)
+        {
+            perror("\033[0;31mAccept failed !!!");
+            reset();
+            exit(EXIT_FAILURE);
+        }
+        else
+        {
+            green();
+            printf("Client connected from %s to : %d\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+            reset();
+        }
+        //On crée un processus pour chaque client
+        client_pid = fork();
+        if (client_pid == 0)
+        {
+            //On ferme la connexion du server
+            close(server_fd);
+            //On lance la fonction chat
+            chat(new_socket);
+            freeaddrinfo(result);// Ici on libère la mémoire allouée par getaddrinfo
+            exit(0);
+        }
+        else
+        {
+            //On ferme la connexion du client
+            close(new_socket);
+        }
     }
-    printf("Connection accepted from %s  to : %d\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+   
+    return 0;
     
-	if ( (client_pid = fork() == 0) )
-	{
-		//On lance la fonction chat
-		chat(new_socket);
-		//On ferme le socket
-		freeaddrinfo(result);
-		close(new_socket);
-		
-	}
-    
-}
-
-return 0;
 }
