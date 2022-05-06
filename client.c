@@ -97,7 +97,7 @@ int main(int argc , char *argv[])
            memset(&address_ip, 0, sizeof(address_ip));
            address_ip.ai_family = AF_INET;    /* Unsecific allow IPv4 or IPv6 only IPv4 here */
            address_ip.ai_socktype = SOCK_STREAM; /* Type of socket, here we have a TCP socket */
-           address_ip.ai_protocol = IPPROTO_TCP;  //0
+           address_ip.ai_protocol = IPPROTO_TCP;  // 0
              /* Any protocol */
 
            res = getaddrinfo(argv[1], PORT, &address_ip, &result);
@@ -119,11 +119,8 @@ int main(int argc , char *argv[])
 			reset();
 
 					//connect the socket to the server
-	
-					
 				if ( connect(client_fd, client->ai_addr, client->ai_addrlen) != -1 )
 				{
-					
 					break;
 					close(client_fd);
 				}
@@ -133,14 +130,6 @@ int main(int argc , char *argv[])
 					perror ("Failed to create and connected !!! \n");
 					exit(EXIT_FAILURE);
 				}
-				
-		//printf ("Client socket created and connected \n");
-    /*char * message = " Connexion ";
-	if (send (client_fd,message,strlen(message),0) == -1 )
-	{
-		perror ("Failed !!!!! \n");
-		exit(EXIT_FAILURE);
-	}*/
 	else
 	{
 		printf ("Client socket created and connected \n");

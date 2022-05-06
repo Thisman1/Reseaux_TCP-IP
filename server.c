@@ -156,8 +156,9 @@ int main(int argc , char *argv[])
 		// kill "Address already in use" error message
 		if (setsockopt(server_fd,SOL_SOCKET,SO_REUSEADDR,&tr,sizeof(int)) == -1) 
 		{
-			perror("setsockopt");
-			exit(1);
+			perror("\033[0;31msetsockopt (socket option)");
+        reset();
+        exit(EXIT_FAILURE);
 		}
 		if ( bind (server_fd, server->ai_addr, server->ai_addrlen) == 0)
 			{
