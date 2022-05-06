@@ -15,14 +15,22 @@
 //On définit le port
 const char *PORT = "8080";
 
+//print par défaut
+void reset () {
+  printf("\033[0m");
+}
 
+//print en vert
+void green () {
+    printf("\033[0;32m");
+}
 
+//Function to chat between client and server
 void chat(int sockfd)
 {
     char msg1 [BUFFER_SIZE];
     char msg2 [BUFFER_SIZE];
     int read_size;
-    send(sockfd, "Welcome to the chat room!\n", 100, 0);
     while(1)
     {
         //Si le message est "Exit" le client va fermer la connexion
@@ -63,17 +71,6 @@ void chat(int sockfd)
 
     }
 }
-//print par défaut
-void reset () {
-  printf("\033[0m");
-}
-
-//print en vert
-void green () {
-    printf("\033[0;32m");
-}
-
-//Function to chat between client and server
 
 
 //Main function for the client side
@@ -118,6 +115,7 @@ int main(int argc , char *argv[])
 			printf("Socket successfully created\n");
 			reset();
 
+<<<<<<< HEAD
 					//connect the socket to the server
 				if ( connect(client_fd, client->ai_addr, client->ai_addrlen) != -1 )
 				{
@@ -130,11 +128,25 @@ int main(int argc , char *argv[])
 					perror ("Failed to create and connected !!! \n");
 					exit(EXIT_FAILURE);
 				}
+=======
+		//connect the socket to the server			
+		if ( connect(client_fd, client->ai_addr, client->ai_addrlen) != -1 )
+		{
+					
+			break;
+			close(client_fd);
+		}
+	}
+	if (client == NULL)
+	{
+		perror ("Failed to create and connected !!! \n");
+		exit(EXIT_FAILURE);
+	}
+>>>>>>> 07dd96c977614d895c73007c385c68a6ad7fd8e3
 	else
 	{
 		printf ("Client socket created and connected \n");
 	}
-
     //Function for chat
     chat(client_fd);
     //Close the socket
