@@ -9,8 +9,8 @@
 #include <sys/socket.h>
 
 #define SERVER "127.0.0.1"
-#define BUFLEN 512      // Taille maximum de buffer
-#define PORT 8888       // Le port sur lequel envoyer les données
+#define BUFLEN 1024      // Taille maximum de buffer
+#define PORT 8080       // Le port sur lequel envoyer les données
 
 
 //print par défaut
@@ -54,6 +54,8 @@ int main(void)
         }
 
         memset((char *) &client, 0, sizeof(client));
+        
+        // Remplissage de la structure 'sockaddr_in' coté client :
         client.sin_family = AF_INET;
         client.sin_port = htons(PORT);
 
@@ -62,6 +64,8 @@ int main(void)
                 fprintf(stderr, "inet_aton() failed\n");
                 exit(1);
         }
+
+       
 
         // Conversation :
 

@@ -8,8 +8,8 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
-#define BUFLEN 512      // Taille maximum de buffer
-#define PORT 8888       // Le port sur lequel envoyer les données
+#define BUFLEN 1024      // Taille maximum de buffer
+#define PORT 8080       // Le port sur lequel envoyer les données
 
 
 
@@ -55,7 +55,8 @@ int main(void)
 
         // On vide la structure puis on la remplit avec nos paramètres souhaités
         memset((char *) &server, 0, sizeof(server));
-
+        
+        // Remplissage de la structure 'sockaddr_in' coté serveur :
         server.sin_family = AF_INET;
         server.sin_port = htons(PORT);
         server.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -80,7 +81,7 @@ int main(void)
                 reset();
                 fflush(stdout);
 
-                //Réception de données grâce à la fonction 'recvfrom()'
+                //Réception de données grâce à la fonction 'recvfrom()' côté serveur
                 if((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &client, &slen)) == -1)
                 {
                         die("\033[0;31mrecvfrom()");
