@@ -7,10 +7,11 @@
 #include <string.h>
 #include <stdio.h>
 
+
 //On définit le nombre de clients maximum
 #define MAX_CLIENTS 10
 //On définit la taille du buffer
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 100
 //On définit le port
 const char *PORT = "8080";
 
@@ -31,6 +32,59 @@ void reset () {
 void green () {
     printf("\033[0;32m");
 }
+
+
+//Function to fragment the message if it is too long and send it to the client and the client will reassemble it
+void send_fragmented_message(int client_fd, char *message) {
+    int i = 0;
+    int j = 0;
+
+    //On check si le message est trop long
+    if (strlen(message) > BUFFER_SIZE) {
+        //On fragmente le message
+        char *fragment = malloc(BUFFER_SIZE);
+        while (i < strlen(message)) {
+            //On copie le fragment
+            strncpy(fragment, message + i, BUFFER_SIZE);
+            //On envoie le fragment
+            send(client_fd, fragment, BUFFER_SIZE, 0);
+            //On incremente l'index
+            i += BUFFER_SIZE;
+        }
+        //On libère le fragment
+        free(fragment);
+    } else {
+        //On envoie le message si on a pas besoin de le fragmenter
+        send(client_fd, message, strlen(message), 0);
+    }
+}
+
+//Function to reassemble and print the message from the client
+void print_reassemble_message(char *message) {
+    //On check si le message est trop long
+    if (strlen(message) > BUFFER_SIZE) {
+        //On reassemble le message
+        char *reassembled_message = malloc(BUFFER_SIZE);
+        int i = 0;
+        int j = 0;
+        while (i < strlen(message)) {
+            //On copie le fragment
+            strncpy(reassembled_message + j, message + i, BUFFER_SIZE);
+            //On incremente l'index
+            i += BUFFER_SIZE;
+            j += BUFFER_SIZE;
+        }
+        //On affiche le message
+        printf("Client: %s\n", reassembled_message);
+        //On libère le message
+        free(reassembled_message);
+    } else {
+        //Sinon on affiche le message s'il n'a pas besoin d'être fragmenté
+        printf("Client: %s\n", message);
+    }
+}
+
+
 
 //Function to chat between client and server
 void chat(int sockfd)
@@ -70,13 +124,15 @@ void chat(int sockfd)
             perror("Reception message failed");
             break;
         }
-        //On affiche le message reçu
+        //On affiche le message reçu en utilisant la fonction print_reassemble_message
+        //print_reassemble_message(msg1);
         printf("Client: %s\n", msg1);
         fflush(stdout);
         //Enter the message to be sent
         printf("Enter the message: ");
         fgets(msg2, BUFFER_SIZE, stdin);
-        //On envoie le message au client
+        //On envoie le message en vérifiant si il faut fragmenter le message
+        //send_fragmented_message(sockfd, msg2);
         write(sockfd, msg2, strlen(msg2)+1);//+1 pour le \0
 
 
@@ -127,9 +183,8 @@ int main(int argc , char *argv[])
 		// kill "Address already in use" error message
 		if (setsockopt(server_fd,SOL_SOCKET,SO_REUSEADDR,&tr,sizeof(int)) == -1) 
 		{
-			perror("\033[0;31msetsockopt (socket option)");
-        reset();
-        exit(EXIT_FAILURE);
+			perror("setsockopt");
+			exit(1);
 		}
 		if ( bind (server_fd, server->ai_addr, server->ai_addrlen) == 0)
         {
