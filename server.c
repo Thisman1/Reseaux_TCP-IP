@@ -61,7 +61,7 @@ void send_fragmented_message(int client_fd, char *message) {
 
 //Function to reassemble and print the message from the client
 void print_reassemble_message(char *message) {
-    //On check si le message est trop long
+    //On check si le message a été fragmenté
     if (strlen(message) > BUFFER_SIZE) {
         //On reassemble le message
         char *reassembled_message = malloc(BUFFER_SIZE);
@@ -74,12 +74,8 @@ void print_reassemble_message(char *message) {
             i += BUFFER_SIZE;
             j += BUFFER_SIZE;
         }
-        //On affiche le message
-        printf("Client: %s\n", reassembled_message);
-        //On libère le message
-        free(reassembled_message);
     } else {
-        //Sinon on affiche le message s'il n'a pas besoin d'être fragmenté
+        //Sinon on affiche le message s'il n'a pas été fragmenté
         printf("Client: %s\n", message);
     }
 }
@@ -93,7 +89,7 @@ void chat(int sockfd)
     char msg2 [BUFFER_SIZE];
     int read_size;
     //Message de bienvenue
-	send(sockfd, "Welcome to the chat room!\n", 25, 0);
+	send(sockfd, "Welcome to the chat room!\n", 27, 0);
     while(1)
     {
         //Si le message est "Exit" le server va fermer la connexion

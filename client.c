@@ -27,7 +27,7 @@ void green () {
 
 //Function to reassemble and print the message from the server
 void print_reassemble_message(char *message) {
-    //On check si le message est trop long
+    //On check si le message à été fragmenté
     if (strlen(message) > BUFFER_SIZE) {
         //On reassemble le message
         char *reassembled_message = malloc(BUFFER_SIZE);
@@ -45,7 +45,7 @@ void print_reassemble_message(char *message) {
         //On libère le message
         free(reassembled_message);
     } else {
-        //Si le message n'est pas trop long, on affiche le message
+        //Si le message n'a pas été fragmenté on affiche le message
         printf("Server: %s\n", message);
     }
 }
